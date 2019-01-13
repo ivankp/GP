@@ -1,0 +1,11 @@
+/*
+
+!.gitignore
+!.gitmodules
+!Makefile
+!README*
+!include/
+!src/
+!scripts/
+
+**.swp
