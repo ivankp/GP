@@ -7,18 +7,9 @@
 #include <type_traits>
 #include <cmath>
 
-namespace gp {
+#include "linalg.hh"
 
-template <typename T>
-constexpr auto sq(T x) noexcept { return x*x; }
-template <typename T, typename... TT>
-constexpr auto sq(T x, TT... xx) noexcept { return sq(x)+sq(xx...); }
-
-constexpr unsigned utn(unsigned n) noexcept { return n*(n+1) >> 1; }
-
-void cholesky(double* A, unsigned N) noexcept;
-void solve_triang(const double* L, double* v, unsigned n) noexcept;
-double dot(const double* a, const double* b, unsigned n) noexcept;
+// Gaussian Process =================================================
 
 template <typename Xs, typename Ys, typename Us, typename Ts, typename Kernel>
 std::vector<std::array<double,2>> GP(
@@ -30,6 +21,7 @@ std::vector<std::array<double,2>> GP(
 ) {
   using std::distance;
   using std::next;
+  using namespace linalg;
 
   const auto x_begin = begin(xs);
   const auto x_end = end(xs);
@@ -93,8 +85,6 @@ std::vector<std::array<double,2>> GP(
   delete[] L;
 
   return out;
-}
-
 }
 
 #endif

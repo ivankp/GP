@@ -8,6 +8,7 @@
 
 using std::cout;
 using std::endl;
+using linalg::sq;
 
 int main(int argc, char* argv[]) {
   std::vector<double> xs {1,2,3,4,5,6,7,8,9,10};
@@ -17,12 +18,12 @@ int main(int argc, char* argv[]) {
 
   const int nt = atoi(argv[1]);
 
-  const auto gp = gp::GP(xs,ys,us,
+  const auto gp = GP(xs,ys,us,
     generator(0,nt,[a=xs.front(),s=(xs.back()-xs.front())/(nt-1)](auto i){
       return a + s*i;
     }),
     [](auto a, auto b){
-      return std::exp((-0.5/gp::sq(2))*gp::sq(a-b));
+      return std::exp((-0.5/sq(2))*sq(a-b));
     }
   );
 

@@ -1,6 +1,7 @@
-#include "gp.hh"
+#include "linalg.hh"
+#include <cmath>
 
-namespace gp {
+namespace linalg {
 
 void cholesky(double* A, unsigned N) noexcept {
   unsigned col = 0, row = 0;
