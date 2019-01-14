@@ -38,13 +38,14 @@ std::vector<std::array<double,2>> GP(
   const auto N = utn(nx);
   double* const L = new double[N];
 
-  double* k = L;
-  auto u = begin(us);
-  // compute covariance matrix K
-  for (auto a=x_begin; a!=x_end; ++a) {
-    for (auto b=x_begin; ; ++b, ++k) {
-      *k = kernel(*a,*b);
-      if (b==a) { *k += sq(*u); ++u; ++k; break; }
+  { double* k = L;
+    auto u = begin(us);
+    // compute covariance matrix K
+    for (auto a=x_begin; a!=x_end; ++a) {
+      for (auto b=x_begin; ; ++b, ++k) {
+        *k = kernel(*a,*b);
+        if (b==a) { *k += sq(*u); ++u; ++k; break; }
+      }
     }
   }
 
@@ -52,47 +53,42 @@ std::vector<std::array<double,2>> GP(
 
   // mean = k* (LL)^-1 y
 
-  // Solve L^-1 y
-  const auto y_begin = begin(ys);
-  const auto y_end = end(ys);
-  const auto ny = distance(y_begin, y_end);
-  using ny_t = std::remove_const_t<decltype(ny)>;
+  double* const y = new double[nx];
+  { auto y_ = begin(ys);
+    for (nx_t i=0; i<nx; ++i) {
+      y[i] = *y_;
+      ++y_;
+    }
+  }
 
-  double* const y = new double[ny];
-  for (ny_t i=0; i<ny; ++i)
-    y[i] = *next(y_begin,i);
+  solve_triang(L,y,nx); // Solve L^-1 y
 
-  solve_triang(L,y,ny);
-
-  // Solve k* L^-1
   const auto t_begin = begin(ts);
   const auto t_end = end(ts);
   const auto nt = distance(t_begin, t_end);
   using nt_t = std::remove_const_t<decltype(nt)>;
 
-  double* const ks = new double[nt*nx];
-  for (nt_t i=0; i<nt; ++i) {
-    const auto t = next(t_begin,i);
-    const auto k = ks + nx*i;
-    for (nx_t j=0; j<nx; ++j)
-      *(k+j) = kernel( *t, *next(x_begin,j) );
-
-    solve_triang(L,k,nx);
-  }
-
   std::vector<std::array<double,2>> out(nt);
-  for (nt_t i=0; i<nt; ++i) {
-    const auto t = next(t_begin,i);
-    const auto k = ks + nx*i;
-    out[i] = {
-      // mean = (k* L^-1) (L^-1 y)
-      dot(k, y, nx),
-      // var = k** - (k* L^-1) (L^-1 k*)
-      std::sqrt(kernel(*t,*t) - dot(k, k, nx))
-    };
+
+  double* const k = new double[nx];
+  { auto t = t_begin;
+    for (nt_t i=0; i<nt; ++i) {
+      for (nx_t j=0; j<nx; ++j)
+        *(k+j) = kernel( *t, *next(x_begin,j) );
+
+      solve_triang(L,k,nx); // Solve k* L^-1
+
+      out[i] = {
+        // mean = (k* L^-1) (L^-1 y)
+        dot(k, y, nx),
+        // var = k** - (k* L^-1) (L^-1 k*)
+        std::sqrt(kernel(*t,*t) - dot(k, k, nx))
+      };
+      ++t;
+    }
   }
 
-  delete[] ks;
+  delete[] k;
   delete[] y;
   delete[] L;
 
