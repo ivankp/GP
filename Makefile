@@ -3,7 +3,7 @@ CXX := g++
 CPPFLAGS := -std=c++14 -Iinclude
 CXXFLAGS := -Wall -Ofast -flto -fmax-errors=3 $(CPPFLAGS)
 # CXXFLAGS := -Wall -g -fmax-errors=3 $(CPPFLAGS)
-LDFLAGS :=
+LDFLAGS := -Wl,--as-needed
 LDLIBS :=
 
 BLD := .build

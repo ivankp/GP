@@ -36,7 +36,7 @@ std::vector<std::array<double,2>> GP(
   const auto nx = distance(x_begin, x_end);
   using nx_t = std::remove_const_t<decltype(nx)>;
   const auto N = utn(nx);
-  double* L = new double[N];
+  double* const L = new double[N];
 
   double* k = L;
   auto u = begin(us);
@@ -58,7 +58,7 @@ std::vector<std::array<double,2>> GP(
   const auto ny = distance(y_begin, y_end);
   using ny_t = std::remove_const_t<decltype(ny)>;
 
-  double* y = new double[ny];
+  double* const y = new double[ny];
   for (ny_t i=0; i<ny; ++i)
     y[i] = *next(y_begin,i);
 
@@ -70,7 +70,7 @@ std::vector<std::array<double,2>> GP(
   const auto nt = distance(t_begin, t_end);
   using nt_t = std::remove_const_t<decltype(nt)>;
 
-  double* ks = new double[nt*nx];
+  double* const ks = new double[nt*nx];
   for (nt_t i=0; i<nt; ++i) {
     const auto t = next(t_begin,i);
     const auto k = ks + nx*i;

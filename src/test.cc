@@ -22,5 +22,6 @@ int main(int argc, char* argv[]) {
   );
 
   for (const auto& p : gp)
-    cout << p[0] << ' ' << p[1] << endl;
+    cout << p[0] << ' ' << p[1] << '\n';
+  cout << std::flush;
 }

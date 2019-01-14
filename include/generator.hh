@@ -1,11 +1,6 @@
 #ifndef GENERATOR_HH
 #define GENERATOR_HH
 
-#include <stdexcept>
-
-template <typename... Ts> struct make_void { typedef void type; };
-template <typename... Ts> using void_t = typename make_void<Ts...>::type;
-
 template <typename It, typename Fcn>
 class generator_ {
   const It _begin, _end;
@@ -19,7 +14,7 @@ class generator_ {
     iterator(Fcn& f, It it): f(f), it(it) { }
 
     template <typename T, typename = void>
-    struct impl {
+    struct impl_ {
       using diff_type = typename std::iterator_traits<T>::difference_type;
       static decltype(auto) get(const iterator& it) { return it.f(*it.it); }
       static diff_type distance(const It& a, const It& b) {
@@ -32,27 +27,28 @@ class generator_ {
       }
     };
     template <typename T>
-    struct impl<T, std::enable_if_t<std::is_integral<T>::value>> {
+    struct impl_<T, std::enable_if_t<std::is_integral<T>::value>> {
       using diff_type = T;
       static decltype(auto) get(const iterator& it) { return it.f(it.it); }
       static diff_type distance(T a, T b) { return b - a; }
       static T next(T it, diff_type n = 1) { return it + n; }
     };
+    using impl = impl_<It>;
 
   public:
-    using difference_type = typename impl<It>::diff_type;
+    using difference_type = typename impl::diff_type;
 
-    decltype(auto) operator*() const { return impl<It>::get(*this); }
+    decltype(auto) operator*() const { return impl::get(*this); }
 
     bool operator==(const iterator& o) const noexcept { return it == o.it; }
     bool operator!=(const iterator& o) const noexcept { return it != o.it; }
     iterator& operator++() { ++it; return *this; }
 
     friend difference_type distance(const iterator& a, const iterator& b) {
-      return impl<It>::distance(a.it,b.it);
+      return impl::distance(a.it,b.it);
     }
     friend iterator next(const iterator& it, difference_type n = 1) {
-      return { it.f, impl<It>::next(it.it,n) };
+      return { it.f, impl::next(it.it,n) };
     }
   };
   friend class iterator;
