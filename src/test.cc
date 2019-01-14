@@ -3,7 +3,7 @@
 #include <cmath>
 
 #include "gp.hh"
-#include "math.hh"
+#include "generator.hh"
 
 using std::cout;
 using std::endl;
@@ -14,9 +14,12 @@ int main(int argc, char* argv[]) {
   std::vector<double> us {0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2};
   std::vector<double> ts {1.5,2.5,3.5};
 
-  const auto gp = gp::GP(xs,ys,us,xs,[](auto a, auto b){
-    return std::exp((-0.5/gp::sq(2))*gp::sq(a-b));
-  });
+  const auto gp = gp::GP(xs,ys,us,
+    generator(0,1000,[](auto i){ return 1.+(9./1000)*i; }),
+    [](auto a, auto b){
+      return std::exp((-0.5/gp::sq(2))*gp::sq(a-b));
+    }
+  );
 
   for (const auto& p : gp)
     cout << p[0] << ' ' << p[1] << endl;
