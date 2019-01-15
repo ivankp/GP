@@ -26,7 +26,8 @@ all: $(EXES)
 -include $(DEPS)
 
 # -------------------------------------------------------------------
-bin/test: linalg.o
+bin/test_gp: linalg.o
+bin/test_wls: linalg.o wls.o
 # -------------------------------------------------------------------
 
 $(DEPS): $(BLD)/%.d: src/%$(EXT)
