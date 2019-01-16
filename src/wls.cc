@@ -7,10 +7,6 @@
 
 // p = (At V^-1 A)^-1 At V^-1 y
 
-#include <iostream>
-using std::cout;
-using std::endl;
-
 using namespace linalg;
 
 void wls(
@@ -29,7 +25,8 @@ void wls(
   // V^-1 = (u^2)^-1
   // LL = At V^-1 A
   // p = At V^-1 y
-  // solve  p = L^-1 p  twice
+  // solve p = L^-1 p
+  // solve p = LT^-1 p
   // ================================================================
 
   // V^-1 = (u^2)^-1
@@ -46,15 +43,7 @@ void wls(
     }
   }
 
-  for (unsigned i=0; i<N; ++i)
-    cout << L[i] << '\n';
-  cout << endl;
-
   cholesky(L,N);
-
-  for (unsigned i=0; i<N; ++i)
-    cout << L[i] << '\n';
-  cout << endl;
 
   // p = At V^-1 y
   for (unsigned i=nx; i; ) { --i; V[i] *= y[i]; }
@@ -67,13 +56,8 @@ void wls(
     }
   }
 
-  for (unsigned i=0; i<np; ++i)
-    cout << p[i] << '\n';
-  cout << endl;
-
-  // solve  p = L^-1 p  twice
-  solve_triang(L,p,np);
-  solve_triang(L,p,np);
+  solve_triang  (L,p,np); // solve p = L^-1 p
+  solve_triang_T(L,p,np); // solve p = LT^-1 p
 
   delete[] L;
 }

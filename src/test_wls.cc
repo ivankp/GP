@@ -4,17 +4,17 @@
 #include <cstdlib>
 
 #include "wls.hh"
-#include "generator.hh"
 
 using std::cout;
 using std::endl;
 
 int main(int argc, char* argv[]) {
-  std::vector<double> xs {1,2,3,4,5,6,7,8,9,10};
+  std::vector<double> xs {0.1,0.2,0.3,0.4,0.5,1,2,3,4,5,6,7,8,9,10};
   std::vector<double(*)(double)> fs {
     [](double x){ return 1.;  },
     [](double x){ return x;   },
-    [](double x){ return x*x; }
+    [](double x){ return x*x; },
+    [](double x){ return x*x*x; }
   };
   std::vector<double> ps(fs.size());
 
@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
   //   cout << x << '\n';
   // cout << std::endl;
 
-  std::vector<double> cs { 1, 2, 3 };
+  std::vector<double> cs { 0.001, 2, 3, 0.5 };
   std::vector<double> ys(xs.size());
   std::vector<double> us(xs.size());
   for (unsigned i=0, nx=xs.size(); i<nx; ++i) {

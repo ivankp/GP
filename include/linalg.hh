@@ -12,6 +12,7 @@ constexpr unsigned utn(unsigned n) noexcept { return n*(n+1) >> 1; }
 
 void cholesky(double* A, unsigned N) noexcept;
 void solve_triang(const double* L, double* v, unsigned n) noexcept;
+void solve_triang_T(const double* L, double* v, unsigned n) noexcept;
 double dot(const double* a, const double* b, unsigned n) noexcept;
 
 }

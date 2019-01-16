@@ -32,6 +32,20 @@ void solve_triang(const double* L, double* v, unsigned n) noexcept {
   }
 }
 
+void solve_triang_T(const double* L, double* v, unsigned n) noexcept {
+  unsigned k = utn(n), i = n-1;
+  v[i] /= L[--k];
+  for (; i; ) {
+    --i;
+    unsigned k2 = --k;
+    for (unsigned j=n-1; j>i; --j) {
+      v[i] -= L[k2] * v[j];
+      k2 -= j;
+    }
+    v[i] /= L[k2];
+  }
+}
+
 double dot(const double* a, const double* b, unsigned n) noexcept {
   double x = 0;
   for (unsigned i=0; i<n; ++i)
