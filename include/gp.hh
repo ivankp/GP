@@ -28,7 +28,10 @@ std::vector<std::array<double,2>> GP(
   const auto nx = distance(x_begin, x_end);
   using nx_t = std::remove_const_t<decltype(nx)>;
   const auto N = utn(nx);
-  double* const L = new double[N];
+
+  double* const L = new double[N+nx+nx];
+  double* const y = L + N;
+  double* const k = y + nx;
 
   { double* k = L;
     auto u = begin(us);
@@ -45,7 +48,6 @@ std::vector<std::array<double,2>> GP(
 
   // mean = k* (LL)^-1 y
 
-  double* const y = new double[nx];
   { auto y_ = begin(ys);
     for (nx_t i=0; i<nx; ++i) {
       y[i] = *y_;
@@ -62,7 +64,6 @@ std::vector<std::array<double,2>> GP(
 
   std::vector<std::array<double,2>> out(nt);
 
-  double* const k = new double[nx];
   { auto t = t_begin;
     for (nt_t i=0; i<nt; ++i) {
       for (nx_t j=0; j<nx; ++j)
@@ -80,8 +81,6 @@ std::vector<std::array<double,2>> GP(
     }
   }
 
-  delete[] k;
-  delete[] y;
   delete[] L;
 
   return out;
