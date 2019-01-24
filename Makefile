@@ -28,6 +28,7 @@ all: $(EXES)
 # -------------------------------------------------------------------
 bin/test_gp: linalg.o
 bin/test_wls: linalg.o wls.o
+bin/poisson_test: linalg.o wls.o
 # -------------------------------------------------------------------
 
 $(DEPS): $(BLD)/%.d: src/%$(EXT)

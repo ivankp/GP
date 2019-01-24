@@ -53,4 +53,25 @@ double dot(const double* a, const double* b, unsigned n) noexcept {
   return x;
 }
 
+void change_poly_coords(double* c, unsigned n, double a, double b) noexcept {
+  double p, C;
+  for (unsigned i=1; i<n; ++i) {
+    C = 1;
+    p = b;
+    for (unsigned j=1; ; ) {
+      C = C * (i+1-j) / j;
+      c[i-j] += C * c[i] * p;
+      if (j==i) break;
+      ++j;
+      p *= b;
+    }
+  }
+  p = a;
+  for (unsigned i=1; ; ) {
+    c[i] *= p;
+    if ((++i)==n) break;
+    p *= a;
+  }
+}
+
 }
