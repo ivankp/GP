@@ -69,7 +69,7 @@ void change_poly_coords(double* c, unsigned n, double a, double b) noexcept {
   p = a;
   for (unsigned i=1; ; ) {
     c[i] *= p;
-    if ((++i)==n) break;
+    if ((++i)>=n) break;
     p *= a;
   }
 }
