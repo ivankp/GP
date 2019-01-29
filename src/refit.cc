@@ -29,21 +29,26 @@ auto time_seed() {
 template <typename T>
 const T& cref(const json& j) { return j.get_ref<const T&>(); }
 
+template <typename T>
+vector<T> split(const json& j) {
+  vector<T> v;
+  std::stringstream ss(cref<string>(j));
+  T x;
+  while (ss >> x) v.emplace_back(std::move(x));
+  return v;
+}
+
 int main(int argc, char* argv[]) {
   json in, out;
   std::cin >> in;
 
-  vector<double> cs;
-  { std::stringstream ss(cref<string>(in["cs"]));
-    double x;
-    while (ss >> x) cs.push_back(x);
-  }
+  vector<double> cs = split<double>(in["cs"]);
   out["params"]["gen"] = cs;
 
   // [105, 160] -> [0, 1]
   linalg::change_poly_coords(cs.data(),cs.size(),55.,105.);
 
-  const unsigned n = atof(cref<string>(in["gen_n"]).c_str());
+  const unsigned n0 = atof(cref<string>(in["gen_n"]).c_str());
   const bool gen_exp = in["gen_exp"]=="true";
   const bool fit_exp = in["fit_exp"]=="true";
 
@@ -55,9 +60,30 @@ int main(int argc, char* argv[]) {
     : atol(seed_str.c_str());
   std::mt19937 gen(seed);
 
+  auto excl = split<double>(in["gen_excl"]);
+  // for (auto& x : excl) x = (x-105.)/55.;
+  bool skipped = true;
+  unsigned n = n0, n1 = 0, n_skip = 0;
+  if (excl.size() >= 2) {
+    if (excl[0] > excl[1]) std::swap(excl[0],excl[1]);
+    if (excl[0] < 105) excl[0] = 105;
+    if (excl[1] > 160) excl[1] = 160;
+    const double s = 55./n;
+    n1 = (excl[0]-105) / s;
+    n_skip = (excl[1]-excl[0]) / s;
+    n -= n_skip;
+    skipped = false;
+  }
+
   vector<double> xs(n), ys(n), us(n), fit_ys(n), fit_us(n);
-  for (unsigned i=0; i<n; ++i) {
-    const double x = xs[i] = (i + 0.5)/n;
+  for (unsigned i=0, xi=0; i<n; ++i, ++xi) {
+    if (!skipped && i >= n1) {
+      xi += n_skip;
+      // gen.discard(n_skip);
+      // for (auto i=n_skip; i; --i) std::poisson_distribution<unsigned>(100)(gen);
+      skipped = true;
+    }
+    const double x = xs[i] = (xi + 0.5)/n0;
 
     double f = 0; // sampled distribution
     for (auto j=cs.size(); j; ) --j, f += cs[j]*std::pow(x,j);
@@ -88,18 +114,18 @@ int main(int argc, char* argv[]) {
 
   wls(A.data(),fit_ys.data(),fit_us.data(),xs.size(),ps.size(),ps.data());
 
-  // Residuals ======================================================
-  vector<double> res(n);
+  // Differences ====================================================
+  vector<double> diff(n);
   for (unsigned i=0; i<n; ++i) {
     double f = 0; // fitted function
     for (auto j=ps.size(); j; ) --j, f += ps[j]*std::pow(xs[i],j);
     if (fit_exp) f = std::exp(f);
 
-    // res[i] = 100.*(ys[i] - f)/f;
-    res[i] = ys[i] - f;
+    // diff[i] = 100.*(ys[i] - f)/f;
+    diff[i] = ys[i] - f;
   }
 
-  // Fit Gaussian process to residuals ==============================
+  // Fit Gaussian process to differences ============================
   const bool gp_diff = in["gp_diff"]=="true";
   const auto& unc_str = cref<string>(in["gp_u"]);
   if (!unc_str.empty()) {
@@ -109,7 +135,7 @@ int main(int argc, char* argv[]) {
   const unsigned gp_n = atof(cref<string>(in["gp_n"]).c_str());
   const double kernel_coeff
     = -0.5/sq(atof(cref<string>(in["gp_l"]).c_str()));
-  const auto gp = GP(xs,(gp_diff ? res : ys),us,
+  const auto gp = GP(xs,(gp_diff ? diff : ys),us,
     generator(0,gp_n+1,[dx=1./gp_n](auto i){ return dx*i; }), // test points
     [=](auto a, auto b){ return std::exp(kernel_coeff*sq(a-b)); } // kernel
   );
@@ -118,8 +144,11 @@ int main(int argc, char* argv[]) {
   // [0, 1] -> [105, 160]
   linalg::change_poly_coords(ps.data(),ps.size(),1./55.,-105./55.);
 
+  for (auto& x : xs) x = 105. + 55.*x;
+
   out["params"]["fit"] = ps;
   out["seed"] = seed;
+  out["xs"] = xs;
   out["ys"] = ys;
   out["gp"] = gp;
   cout << out;
