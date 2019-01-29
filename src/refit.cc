@@ -64,10 +64,11 @@ int main(int argc, char* argv[]) {
     if (gen_exp) f = std::exp(f);
 
     const double y = ys[i] = std::poisson_distribution<unsigned>(f)(gen);
-    const double u = us[i] = std::sqrt(y);
+    const bool gt0 = y > 0;
+    const double u = us[i] = gt0 ? std::sqrt(y) : 1;
 
     if (fit_exp) {
-      fit_ys[i] = std::log(y);
+      fit_ys[i] = gt0 ? std::log(y) : 0;
       fit_us[i] = 1./u;
     } else {
       fit_ys[i] = y;
