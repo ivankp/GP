@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
   json in, out;
   std::cin >> in;
 
-  vector<double> cs = split<double>(in["cs"]);
+  vector<double> cs = split<double>(in["gen_cs"]);
   out["params"]["gen"] = cs;
 
   // [105, 160] -> [0, 1]
@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
   const bool fit_exp = in["fit_exp"]=="true";
 
   // Generate pseudo-data ===========================================
-  const auto& seed_str = cref<string>(in["seed"]);
+  const auto& seed_str = cref<string>(in["gen_seed"]);
   const long seed = (seed_str.empty()
       || seed_str.find_first_not_of("0123456789")!=string::npos)
     ? time_seed()
