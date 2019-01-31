@@ -134,7 +134,7 @@ int main(int argc, char* argv[]) {
   }
   const unsigned gp_n = atof(cref<string>(in["gp_n"]).c_str());
   const double kernel_coeff
-    = -0.5/sq(atof(cref<string>(in["gp_l"]).c_str()));
+    = -0.5/sq(atof(cref<string>(in["gp_l"]).c_str())/55.);
   const auto gp = GP(xs,(gp_diff ? diff : ys),us,
     generator(0,gp_n+1,[dx=1./gp_n](auto i){ return dx*i; }), // test points
     [=](auto a, auto b){ return std::exp(kernel_coeff*sq(a-b)); } // kernel
