@@ -92,4 +92,32 @@ void change_poly_coords(double* c, unsigned n, double a, double b) noexcept {
   }
 }
 
+/*
+void L_LT(const double* L, double* prod, unsigned n) noexcept {
+  for (unsigned i=0, k=0; i<n; ++i) {
+    unsigned j = 0;
+    for (unsigned l=0; j<=i; ++j) {
+      *prod = 0;
+      for (unsigned j2=0; j2<=j; ++j2, ++l)
+        *prod += L[l]*L[k+j2];
+      ++prod;
+    }
+    k += j;
+  }
+}*/
+
+void LT_L(double* L, unsigned n) noexcept {
+  for (unsigned i=0, k=0; i<n; ++i) {
+    for (unsigned j=0; j<=i; ++j, ++k) {
+      const unsigned r = i-j;
+      unsigned a = k;
+      auto& l = L[a] *= L[a+r];
+      for (unsigned d=i+1; d<n; ++d) {
+        a += d;
+        l += L[a]*L[a+r];
+      }
+    }
+  }
+}
+
 }

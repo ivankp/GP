@@ -62,21 +62,11 @@ void wls(
   solve_triang_T(L,p,np); // solve p = LT^-1 p
 
   if (cov) {
+    inv_triang(L,np); // invert
     memcpy(cov,L,N*sizeof(double)); // test
     cov += N; // test
-    inv_triang(L,np); // invert
-    // multiply by transpose
-    // TODO: need to compute LT.L instead of L.LT
-    for (unsigned i=0, k=0; i<np; ++i) {
-      unsigned j = 0;
-      for (unsigned l=0; j<=i; ++j) {
-        *cov = 0;
-        for (unsigned j2=0; j2<=j; ++j2, ++l)
-          *cov += L[l]*L[k+j2];
-        ++cov;
-      }
-      k += j;
-    }
+    LT_L(L,np); // multiply LT by L
+    memcpy(cov,L,N*sizeof(double));
   }
 
   delete[] L;

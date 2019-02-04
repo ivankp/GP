@@ -110,10 +110,10 @@ int main(int argc, char* argv[]) {
       A.push_back(std::pow(x,i));
   }
 
-  // vector<double> cov(linalg::utn(ps.size())*2);
+  vector<double> cov(linalg::utn(ps.size())*2);
 
   wls(A.data(), fit_ys.data(), fit_us.data(), xs.size(),
-      ps.size(), ps.data()/*, cov.data()*/);
+      ps.size(), ps.data(), cov.data());
 
   // turn cov matrix into corr and fractional unc
   // for (unsigned i=0, k=0, n=ps.size(); i<n; ++i) {
@@ -163,6 +163,6 @@ int main(int argc, char* argv[]) {
   out["xs"] = xs;
   out["ys"] = ys;
   out["gp"] = gp;
-  // out["cov"] = cov;
+  out["cov"] = cov;
   cout << out;
 }
