@@ -110,25 +110,25 @@ int main(int argc, char* argv[]) {
       A.push_back(std::pow(x,i));
   }
 
-  vector<double> cov(linalg::utn(ps.size())*2);
+  vector<double> cov(linalg::utn(ps.size()));
 
   wls(A.data(), fit_ys.data(), fit_us.data(), xs.size(),
       ps.size(), ps.data(), cov.data());
 
   // turn cov matrix into corr and fractional unc
-  // for (unsigned i=0, k=0, n=ps.size(); i<n; ++i) {
-  //   const unsigned a = linalg::utn(i+1)-1;
-  //   cov[a] = std::sqrt(cov[a]);
-  //   for (unsigned j=0; j<i; ++j, ++k) {
-  //     const unsigned b = linalg::utn(j+1)-1;
-  //     cov[k] /= cov[a]*cov[b];
-  //   }
-  //   ++k;
-  // }
-  // for (unsigned i=0, n=ps.size(); i<n; ++i) {
-  //   const unsigned a = linalg::utn(i+1)-1;
-  //   cov[a] /= ps[i];
-  // }
+  for (unsigned i=0, k=0, n=ps.size(); i<n; ++i) {
+    const unsigned a = linalg::utn(i+1)-1;
+    cov[a] = std::sqrt(cov[a]);
+    for (unsigned j=0; j<i; ++j, ++k) {
+      const unsigned b = linalg::utn(j+1)-1;
+      cov[k] /= cov[a]*cov[b];
+    }
+    ++k;
+  }
+  for (unsigned i=0, n=ps.size(); i<n; ++i) {
+    const unsigned a = linalg::utn(i+1)-1;
+    cov[a] = std::abs(cov[a]/ps[i]);
+  }
 
   // Differences ====================================================
   vector<double> diff(n);

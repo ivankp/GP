@@ -63,8 +63,6 @@ void wls(
 
   if (cov) {
     inv_triang(L,np); // invert
-    memcpy(cov,L,N*sizeof(double)); // test
-    cov += N; // test
     LT_L(L,np); // multiply LT by L
     memcpy(cov,L,N*sizeof(double));
   }
