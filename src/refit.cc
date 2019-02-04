@@ -42,11 +42,10 @@ int main(int argc, char* argv[]) {
   json in, out;
   std::cin >> in;
 
+  constexpr double x_min = 105, x_max = 160, x_range = x_max-x_min;
+
   vector<double> cs = split<double>(in["gen_cs"]);
   out["params"]["gen"] = cs;
-
-  // [105, 160] -> [0, 1]
-  linalg::change_poly_coords(cs.data(),cs.size(),55.,105.);
 
   const unsigned n0 = atof(cref<string>(in["gen_n"]).c_str());
   const bool gen_exp = in["gen_exp"]=="true";
@@ -61,15 +60,14 @@ int main(int argc, char* argv[]) {
   std::mt19937 gen(seed);
 
   auto excl = split<double>(in["gen_excl"]);
-  // for (auto& x : excl) x = (x-105.)/55.;
   bool skipped = true;
   unsigned n = n0, n1 = 0, n_skip = 0;
   if (excl.size() >= 2) {
     if (excl[0] > excl[1]) std::swap(excl[0],excl[1]);
-    if (excl[0] < 105) excl[0] = 105;
-    if (excl[1] > 160) excl[1] = 160;
-    const double s = 55./n;
-    n1 = (excl[0]-105) / s;
+    if (excl[0] < x_min) excl[0] = x_min;
+    if (excl[1] > x_max) excl[1] = x_max;
+    const double s = x_range/n;
+    n1 = (excl[0]-x_min) / s;
     n_skip = (excl[1]-excl[0]) / s;
     n -= n_skip;
     skipped = false;
@@ -83,7 +81,7 @@ int main(int argc, char* argv[]) {
       // for (auto i=n_skip; i; --i) std::poisson_distribution<unsigned>(100)(gen);
       skipped = true;
     }
-    const double x = xs[i] = (xi + 0.5)/n0;
+    const double x = xs[i] = x_min + (xi + 0.5)*(x_range/n0);
 
     double f = 0; // sampled distribution
     for (auto j=cs.size(); j; ) --j, f += cs[j]*std::pow(x,j);
@@ -112,25 +110,25 @@ int main(int argc, char* argv[]) {
       A.push_back(std::pow(x,i));
   }
 
-  vector<double> cov(linalg::utn(ps.size()));
+  // vector<double> cov(linalg::utn(ps.size())*2);
 
   wls(A.data(), fit_ys.data(), fit_us.data(), xs.size(),
-      ps.size(), ps.data(), cov.data());
+      ps.size(), ps.data()/*, cov.data()*/);
 
   // turn cov matrix into corr and fractional unc
-  for (unsigned i=0, k=0, n=ps.size(); i<n; ++i) {
-    const unsigned a = linalg::utn(i+1)-1;
-    cov[a] = std::sqrt(cov[a]);
-    for (unsigned j=0; j<i; ++j, ++k) {
-      const unsigned b = linalg::utn(j+1)-1;
-      cov[k] /= cov[a]*cov[b];
-    }
-    ++k;
-  }
-  for (unsigned i=0, n=ps.size(); i<n; ++i) {
-    const unsigned a = linalg::utn(i+1)-1;
-    cov[a] /= ps[i];
-  }
+  // for (unsigned i=0, k=0, n=ps.size(); i<n; ++i) {
+  //   const unsigned a = linalg::utn(i+1)-1;
+  //   cov[a] = std::sqrt(cov[a]);
+  //   for (unsigned j=0; j<i; ++j, ++k) {
+  //     const unsigned b = linalg::utn(j+1)-1;
+  //     cov[k] /= cov[a]*cov[b];
+  //   }
+  //   ++k;
+  // }
+  // for (unsigned i=0, n=ps.size(); i<n; ++i) {
+  //   const unsigned a = linalg::utn(i+1)-1;
+  //   cov[a] /= ps[i];
+  // }
 
   // Differences ====================================================
   vector<double> diff(n);
@@ -152,23 +150,19 @@ int main(int argc, char* argv[]) {
   }
   const unsigned gp_n = atof(cref<string>(in["gp_n"]).c_str());
   const double kernel_coeff
-    = -0.5/sq(atof(cref<string>(in["gp_l"]).c_str())/55.);
+    = -0.5/sq(atof(cref<string>(in["gp_l"]).c_str()));
   const auto gp = GP(xs,(gp_diff ? diff : ys),us,
-    generator(0,gp_n+1,[dx=1./gp_n](auto i){ return dx*i; }), // test points
+    generator(0,gp_n+1,[dx=x_range/gp_n](auto i){ return x_min+dx*i; }), // test points
     [=](auto a, auto b){ return std::exp(kernel_coeff*sq(a-b)); } // kernel
   );
 
   // Write output ===================================================
-  // [0, 1] -> [105, 160]
-  linalg::change_poly_coords(ps.data(),ps.size(),1./55.,-105./55.);
-
-  for (auto& x : xs) x = 105. + 55.*x;
 
   out["params"]["fit"] = ps;
   out["seed"] = seed;
   out["xs"] = xs;
   out["ys"] = ys;
   out["gp"] = gp;
-  out["cov"] = cov;
+  // out["cov"] = cov;
   cout << out;
 }
