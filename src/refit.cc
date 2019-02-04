@@ -112,7 +112,18 @@ int main(int argc, char* argv[]) {
       A.push_back(std::pow(x,i));
   }
 
-  wls(A.data(),fit_ys.data(),fit_us.data(),xs.size(),ps.size(),ps.data());
+  vector<double> cov(linalg::utn(ps.size())*2);
+
+  wls(A.data(), fit_ys.data(), fit_us.data(), xs.size(),
+      ps.size(), ps.data(), cov.data());
+
+  // turn cov matrix into corr and fractional unc
+  // for (unsigned i=0, k=0, n=ps.size(); i<n; ++i) {
+  //   for (unsigned j=0; j<=i; ++j, ++k) {
+  //     if (j==i) cov[k] /= ps[i];
+  //     else 
+  //   }
+  // }
 
   // Differences ====================================================
   vector<double> diff(n);
@@ -151,5 +162,6 @@ int main(int argc, char* argv[]) {
   out["xs"] = xs;
   out["ys"] = ys;
   out["gp"] = gp;
+  out["cov"] = cov;
   cout << out;
 }

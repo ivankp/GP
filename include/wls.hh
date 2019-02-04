@@ -7,7 +7,8 @@ void wls(
   const double* u, // uncertainties
   unsigned nx, // number of measured values
   unsigned np, // number of parameters
-  double* p // fitted functions coefficients (parameters)
+  double* p, // fitted functions coefficients (parameters)
+  double* cov = nullptr // covariance matrix
 );
 
 #endif

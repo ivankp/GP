@@ -1,6 +1,7 @@
 #include "wls.hh"
 
 #include "linalg.hh"
+#include <cstring>
 
 // Cowan p. 97
 // https://en.wikipedia.org/wiki/Generalized_least_squares
@@ -15,7 +16,8 @@ void wls(
   const double* u, // uncertainties
   unsigned nx, // number of measured values
   unsigned np, // number of parameters
-  double* p // fitted functions coefficients (parameters)
+  double* p, // fitted functions coefficients (parameters)
+  double* cov // covariance matrix
 ) {
   const unsigned N = utn(np);
   double* const L = new double[N+nx];
@@ -58,6 +60,13 @@ void wls(
 
   solve_triang  (L,p,np); // solve p = L^-1 p
   solve_triang_T(L,p,np); // solve p = LT^-1 p
+
+  if (cov) {
+    memcpy(cov,L,N*sizeof(double));
+    cov += N;
+    inv_triang(L,np);
+    memcpy(cov,L,N*sizeof(double));
+  }
 
   delete[] L;
 }

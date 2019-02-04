@@ -46,6 +46,24 @@ void solve_triang_T(const double* L, double* v, unsigned n) noexcept {
   }
 }
 
+void inv_triang(double* L, unsigned n) noexcept {
+  unsigned i = 0;
+  for (unsigned r=0; r<n; ++r) {
+    unsigned c2 = 0;
+    for (unsigned c=0; c<r; ++c) {
+      unsigned j = 0;
+      for (; j<c; ++j, ++c2) L[i+j] -= L[i+c]*L[c2];
+      L[i+j] *= -L[c2];
+      ++c2;
+    }
+    i += r;
+    double& Li = L[i];
+    Li = 1./Li;
+    for (; c2<i; ++c2) L[c2] *= Li;
+    ++i;
+  }
+}
+
 double dot(const double* a, const double* b, unsigned n) noexcept {
   double x = 0;
   for (unsigned i=0; i<n; ++i)
