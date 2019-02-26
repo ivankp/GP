@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
-import math
+import math, sys
 from gaussian_process import *
 import numpy as np
+
+l = float(sys.argv[1]) if len(sys.argv)>1 else 1.
+u = float(sys.argv[2]) if len(sys.argv)>2 else 0.001
 
 # https://www.librec.net/datagen.html
 xs = [
@@ -13,11 +16,11 @@ ys = [
 2.35, 4.4, 5., 2.95, 2.55, 5.1, 3.9, 6.9, 11.45, 10.25, 6.6, 10.4, 14.4, 11.25,
 13.2, 13.75, 11.8, 14.65, 12.
 ]
-us = [ 1. for x in xs ]
+us = [ u for x in xs ]
 ts = np.linspace(4.,36.,1001).tolist()
 
 def kernel(a, b):
-    return math.exp(-0.5*((a-b)**2))
+    return math.exp(-0.5*(((a-b)/l)**2))
 
 gp = gaussian_process(xs,ys,us,ts,kernel)
 
@@ -34,6 +37,7 @@ plt.gca().fill_between(
     [ m+u for m,u in gp ],
     color="#dddddd"
 )
+plt.plot(xs, ys, 'b.', ms=8)
 plt.plot(ts, [ m for m,u in gp ], 'r-', lw=2)
 # plt.axis([105,160,0,40])
 
