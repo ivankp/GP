@@ -6,6 +6,7 @@ import numpy as np
 
 l = float(sys.argv[1]) if len(sys.argv)>1 else 1.
 u = float(sys.argv[2]) if len(sys.argv)>2 else 0.001
+m = float(sys.argv[3]) if len(sys.argv)>3 else 1.
 
 # https://www.librec.net/datagen.html
 xs = [
@@ -17,10 +18,10 @@ ys = [
 13.2, 13.75, 11.8, 14.65, 12.
 ]
 us = [ u for x in xs ]
-ts = np.linspace(4.,36.,1001).tolist()
+ts = np.linspace(0.,40.,1001).tolist()
 
 def kernel(a, b):
-    return math.exp(-0.5*(((a-b)/l)**2))
+    return m * math.exp(-0.5*(((a-b)/l)**2))
 
 gp = gaussian_process(xs,ys,us,ts,kernel)
 
@@ -40,6 +41,7 @@ plt.gca().fill_between(
 plt.plot(xs, ys, 'b.', ms=8)
 plt.plot(ts, [ m for m,u in gp ], 'r-', lw=2)
 # plt.axis([105,160,0,40])
+plt.margins(x=0)
 
 plt.savefig('test.pdf', bbox_inches='tight')
 

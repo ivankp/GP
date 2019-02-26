@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
 
     const double y = ys[i] = std::poisson_distribution<unsigned>(f)(gen);
     const bool gt0 = y > 0;
-    const double u = us[i] = gt0 ? std::sqrt(y) : 1;
+    const double u = us[i] = gt0 ? y : 1;
 
     if (fit_exp) {
       fit_ys[i] = gt0 ? std::log(y) : 0;
@@ -145,7 +145,7 @@ int main(int argc, char* argv[]) {
   const bool gp_diff = in["gp_diff"]=="true";
   const auto& unc_str = cref<string>(in["gp_u"]);
   if (!unc_str.empty()) {
-    const double unc = atof(unc_str.c_str());
+    const double unc = sq(atof(unc_str.c_str()));
     for (double& u : us) u = unc;
   }
   const unsigned gp_n = atof(cref<string>(in["gp_n"]).c_str());

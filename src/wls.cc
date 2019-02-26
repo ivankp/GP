@@ -13,7 +13,7 @@ using namespace linalg;
 void wls(
   const double* A, // matrix of functions values: p (row) then x (col)
   const double* y, // measured values
-  const double* u, // uncertainties
+  const double* u, // variances
   unsigned nx, // number of measured values
   unsigned np, // number of parameters
   double* p, // fitted functions coefficients (parameters)
@@ -32,7 +32,7 @@ void wls(
   // ================================================================
 
   // V^-1 = (u^2)^-1
-  for (unsigned i=nx; i; ) { --i; V[i] = 1./sq(u[i]); }
+  for (unsigned i=nx; i; ) { --i; V[i] = 1./u[i]; }
 
   // LL = At V^-1 A
   for (unsigned i=0, r1=0, k=0; i<np; ++i, r1+=nx) {

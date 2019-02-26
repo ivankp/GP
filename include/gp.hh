@@ -15,7 +15,7 @@ template <typename Xs, typename Ys, typename Us, typename Ts, typename Kernel>
 std::vector<std::array<double,2>> GP(
   const Xs& xs, // training points coordinates
   const Ys& ys, // training points values
-  const Us& us, // uncertainties (add to diagonal)
+  const Us& us, // noise variances (add to diagonal)
   const Ts& ts, // test points
   Kernel&& kernel // kernel function
 ) {
@@ -39,7 +39,7 @@ std::vector<std::array<double,2>> GP(
     for (auto a=x_begin; a!=x_end; ++a) {
       for (auto b=x_begin; ; ++b, ++k) {
         *k = kernel(*a,*b);
-        if (b==a) { *k += sq(*u); ++u; ++k; break; }
+        if (b==a) { *k += *u; ++u; ++k; break; }
       }
     }
   }

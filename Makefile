@@ -28,7 +28,7 @@ all: $(EXES)
 # -------------------------------------------------------------------
 bin/test_gp: linalg.o
 bin/test_wls: linalg.o wls.o
-bin/refit: linalg.o wls.o
+bin/hgam_sandbox: linalg.o wls.o
 # -------------------------------------------------------------------
 
 $(DEPS): $(BLD)/%.d: src/%$(EXT)
