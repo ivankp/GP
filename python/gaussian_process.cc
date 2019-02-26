@@ -7,6 +7,12 @@
 
 // https://docs.python.org/2/c-api/concrete.html
 
+/*
+#include <iostream>
+#define TEST(var) \
+  std::cout << "\033[36m" #var "\033[0m = " << var << std::endl;
+*/
+
 namespace {
 
 std::vector<double> PyList2vector(PyObject* p) {
@@ -14,6 +20,20 @@ std::vector<double> PyList2vector(PyObject* p) {
   std::vector<double> v(n);
   for (std::remove_const_t<decltype(n)> i=0; i<n; ++i)
     v[i] = PyFloat_AsDouble(PyList_GET_ITEM(p,i));
+  return v;
+}
+
+std::vector<double> PyObject2vector(PyObject* p) {
+  std::vector<double> v;
+  const auto n = PyObject_Size(p);
+  if (n > -1) v.reserve(n);
+  p = PyObject_GetIter(p);
+  if (!p) throw std::runtime_error("Unable to iterate PyObject");
+  PyObject *item;
+  while ((item = PyIter_Next(p))) {
+    v.push_back(PyFloat_AsDouble(item));
+    Py_DECREF(item);
+  }
   return v;
 }
 
