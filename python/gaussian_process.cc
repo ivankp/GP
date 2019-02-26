@@ -23,8 +23,8 @@ PyObject* safe(PyObject* p) {
   throw std::runtime_error("Unable to allocate memory for python object");
 }
 
-PyObject* py(float  x) { return safe(PyFloat_FromDouble((double)x)); }
 PyObject* py(double x) { return safe(PyFloat_FromDouble(x)); }
+PyObject* py(float  x) { return safe(PyFloat_FromDouble((double)x)); }
 PyObject* py(long   x) { return safe(PyInt_FromLong(x)); }
 PyObject* py(size_t x) { return safe(PyInt_FromSize_t(x)); }
 
@@ -58,6 +58,7 @@ PyObject* gp(PyObject *self, PyObject *args) {
     PyList2vector(ts),
     [=](double a, double b){
       PyObject* ref = PyObject_CallFunction(kernel,"dd",a,b);
+      if (!ref) throw std::runtime_error("Unable to call GP kernel function");
       const double k = PyFloat_AS_DOUBLE(ref);
       Py_DECREF(ref);
       return k;

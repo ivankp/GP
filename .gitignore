@@ -10,5 +10,6 @@
 
 !python
 python/build
+python/test.pdf
 
 **.swp
