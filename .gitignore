@@ -8,4 +8,7 @@
 !src/
 !scripts/
 
+!python
+python/build
+
 **.swp
