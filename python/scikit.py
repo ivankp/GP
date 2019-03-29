@@ -11,26 +11,28 @@ from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 # ----------------------------------------------------------------------
 #  First the noiseless case
 X = np.atleast_2d([
-4.3, 5.15, 7.55, 8.25, 10.55, 11.1, 12.25, 13.1, 13.6, 15., 17.05, 18.5, 20.4,
-22.4, 24.6, 28.05, 31.4, 33.75, 35.4
+-7.288352, -6.354489, -6.343246, -5.873644, -4.744751, -4.092581, -3.743588,
+-2.788551, -2.173762, -0.897309, 0.500722, 0.770547, 1.009111, 2.386,
+2.475254, 4.245013, 4.332956, 4.908614, 5.837199, 6.143407
 ]).T
 
 # Observations
 # y = f(X).ravel()
 y = [
-2.35, 4.4, 5., 2.95, 2.55, 5.1, 3.9, 6.9, 11.45, 10.25, 6.6, 10.4, 14.4, 11.25,
-13.2, 13.75, 11.8, 14.65, 12.
+-1.753582, -0.048711, 0.030086, 0.244986, -0.815186, -1.223496, -1.173352,
+0.388252, 1.405444, 1.691977, -0.13467, -0.743553, -1.022923, -2.69914,
+-2.226361, -1.287966, -1.116046, -1.574499, -1.080229, -0.84384
 ]
 
 # Mesh the input space for evaluations of the real function, the prediction and
 # its MSE
-x = np.atleast_2d(np.linspace(0, 40, 1001)).T
+x = np.atleast_2d(np.linspace(X[0], X[-1], 1001)).T
 
 # Instantiate a Gaussian Process model
 gp = GaussianProcessRegressor(
-    kernel = 1.*RBF(1, (1e-2, 1e2)) + WhiteKernel(1, (1e-10, 1e+1)),
-    alpha = 0,
-    n_restarts_optimizer = 0
+    kernel = 1.08*RBF(0.3, (1e-2, 1e2)) + WhiteKernel(5e-5, (1e-10, 1e+1)),
+    # optimizer = None
+    optimizer = 'fmin_l_bfgs_b'
 )
 
 # Fit to data using Maximum Likelihood Estimation of the parameters

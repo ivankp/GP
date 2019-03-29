@@ -86,4 +86,59 @@ std::vector<std::array<double,2>> GP(
   return out;
 }
 
+// log margimal likelihood
+// this function is intended for optimization of kernel parameters
+// the returned value is -likelihood and ignores constant terms
+template <typename Xs, typename Ys, typename Us, typename Kernel,
+          typename... H>
+double gp_logml_opt(
+  const Xs& xs, // training points coordinates
+  const Ys& ys, // training points values
+  const Us& us, // noise variances (add to diagonal)
+  Kernel&& kernel, // kernel function
+  const H&... hs // kernel (hyper)parameters
+) {
+  using std::distance;
+  using std::next;
+  using namespace linalg;
+
+  const auto x_begin = begin(xs);
+  const auto x_end = end(xs);
+  const auto nx = distance(x_begin, x_end);
+  using nx_t = std::remove_const_t<decltype(nx)>;
+  const auto N = utn(nx);
+
+  double* const L = new double[N+nx];
+  double* const y = L + N;
+
+  { double* k = L;
+    auto u = begin(us);
+    // compute covariance matrix K
+    for (auto a=x_begin; a!=x_end; ++a) {
+      for (auto b=x_begin; ; ++b, ++k) {
+        *k = kernel(*a,*b,hs...);
+        if (b==a) { *k += *u; ++u; ++k; break; }
+      }
+    }
+  }
+
+  cholesky(L,N); // K = L L
+
+  double log_det = 0;
+  for (unsigned i=0, j=0; i<nx; j += ++i+1) {
+    log_det += std::log(L[j]);
+  }
+
+  { auto y_ = begin(ys);
+    for (nx_t i=0; i<nx; ++i) {
+      y[i] = *y_;
+      ++y_;
+    }
+  }
+
+  solve_triang(L,y,nx); // Solve L^-1 y
+
+  return 0.5*dot(y,y,nx) + log_det;
+}
+
 #endif

@@ -3,7 +3,7 @@ CXX := g++
 CPPFLAGS := -std=c++14 -Iinclude
 CXXFLAGS := -Wall -Ofast -flto -fmax-errors=3 $(CPPFLAGS)
 # CXXFLAGS := -Wall -g -fmax-errors=3 $(CPPFLAGS)
-LDFLAGS := -Wl,--as-needed
+LDFLAGS :=
 LDLIBS :=
 
 BLD := .build
@@ -29,6 +29,10 @@ all: $(EXES)
 bin/test_gp: linalg.o
 bin/test_wls: linalg.o wls.o
 bin/hgam_sandbox: linalg.o wls.o
+bin/test_gp_opt: linalg.o
+
+L_test_gp_opt := -lgsl -lgslcblas
+L_gsl_min := -lgsl -lgslcblas
 # -------------------------------------------------------------------
 
 $(DEPS): $(BLD)/%.d: src/%$(EXT)
