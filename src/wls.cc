@@ -8,6 +8,8 @@
 
 // p = (At V^-1 A)^-1 At V^-1 y
 
+namespace ivanp {
+
 using namespace linalg;
 
 void wls(
@@ -68,4 +70,6 @@ void wls(
   }
 
   delete[] L;
+}
+
 }

@@ -16,8 +16,10 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
-using linalg::sq;
+using ivanp::linalg::sq;
 using nlohmann::json;
+
+using namespace ivanp;
 
 auto time_seed() {
   const auto t = std::chrono::system_clock::now().time_since_epoch();
@@ -151,7 +153,7 @@ int main(int argc, char* argv[]) {
   const unsigned gp_n = atof(cref<string>(in["gp_n"]).c_str());
   const double kernel_coeff
     = -0.5/sq(atof(cref<string>(in["gp_l"]).c_str()));
-  const auto gp = GP(xs,(gp_diff ? diff : ys),us,
+  const auto gp = gp::regression(xs,(gp_diff ? diff : ys),us,
     generator(0,gp_n+1,[dx=x_range/gp_n](auto i){ return x_min+dx*i; }), // test points
     [=](auto a, auto b){ return std::exp(kernel_coeff*sq(a-b)); } // kernel
   );

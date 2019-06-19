@@ -11,8 +11,14 @@
 
 // Gaussian Process =================================================
 
+namespace ivanp { namespace gp {
+
+namespace detail {
+
+}
+
 template <typename Xs, typename Ys, typename Us, typename Ts, typename Kernel>
-std::vector<std::array<double,2>> GP(
+std::vector<std::array<double,2>> regression(
   const Xs& xs, // training points coordinates
   const Ys& ys, // training points values
   const Us& us, // noise variances (add to diagonal)
@@ -91,7 +97,7 @@ std::vector<std::array<double,2>> GP(
 // the returned value is -likelihood and ignores constant terms
 template <typename Xs, typename Ys, typename Us, typename Kernel,
           typename... H>
-double gp_logml_opt(
+double logml(
   const Xs& xs, // training points coordinates
   const Ys& ys, // training points values
   const Us& us, // noise variances (add to diagonal)
@@ -140,5 +146,7 @@ double gp_logml_opt(
 
   return 0.5*dot(y,y,nx) + log_det;
 }
+
+}} // end namespace ivanp::gp
 
 #endif

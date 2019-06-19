@@ -1,7 +1,7 @@
 #include "linalg.hh"
 #include <cmath>
 
-namespace linalg {
+namespace ivanp { namespace linalg {
 
 void cholesky(double* A, unsigned N) noexcept {
   unsigned col = 0, row = 0;
@@ -120,4 +120,4 @@ void LT_L(double* L, unsigned n) noexcept {
   }
 }
 
-}
+}}

@@ -1,6 +1,8 @@
 #ifndef GENERATOR_HH
 #define GENERATOR_HH
 
+namespace ivanp {
+
 template <typename It, typename Fcn>
 class generator_ {
   const It _begin, _end;
@@ -70,6 +72,8 @@ public:
 template <typename B, typename E, typename F>
 generator_<B,F> generator(B&& b, E&& e, F&& f) {
   return { std::forward<B>(b), std::forward<E>(e), std::forward<F>(f) };
+}
+
 }
 
 #endif

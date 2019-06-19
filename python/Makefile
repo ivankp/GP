@@ -1,6 +1,6 @@
 all: build
 
-build: setup.py gaussian_process.cc ../include/gp.hh
+build: setup.py gp.cc ../include/gp.hh
 	@rm -rfv build
 	CC=g++ python setup.py build
 

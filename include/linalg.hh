@@ -1,7 +1,7 @@
 #ifndef LIN_ALG_HH
 #define LIN_ALG_HH
 
-namespace linalg {
+namespace ivanp { namespace linalg {
 
 template <typename T>
 constexpr auto sq(T x) noexcept { return x*x; }
@@ -21,6 +21,6 @@ void LT_L(double* L, unsigned n) noexcept;
 
 void change_poly_coords(double* c, unsigned n, double a, double b) noexcept;
 
-}
+}}
 
 #endif

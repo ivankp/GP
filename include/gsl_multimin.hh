@@ -1,45 +1,9 @@
 #include <gsl/gsl_multimin.h>
 #include <cstdio>
 #include <array>
+#include <vector>
 
 namespace ivanp {
-
-namespace detail { namespace gsl_multimin {
-
-template <class F, size_t... I>
-decltype(auto) apply_impl(
-  F&& f, const gsl_vector* args, std::index_sequence<I...>
-) {
-  return f( gsl_vector_get(args,I)... );
-}
-template <size_t N, typename F>
-decltype(auto) apply(F&& f, const gsl_vector* args) {
-  return apply_impl(
-    std::forward<F>(f), args,
-    std::make_index_sequence<N>{} );
-}
-
-template <typename T, size_t... I>
-void set_start_step_impl(
-  gsl_vector* x, gsl_vector* step,
-  const T& start_step,
-  std::index_sequence<I...>
-) {
-  using expander = int[];
-  (void)expander{0, ((void)(
-    gsl_vector_set( x   , I, std::get<I>(std::get<0>(start_step)) ),
-    gsl_vector_set( step, I, std::get<I>(std::get<1>(start_step)) )
-  ), 0)...};
-}
-template <size_t N>
-void set_start_step(
-  gsl_vector* x, gsl_vector* step,
-  const std::array<std::array<double,2>,N>& start_step
-) {
-  set_start_step_impl(x,step,start_step,std::make_index_sequence<N>{});
-}
-
-}}
 
 struct gsl_multimin_opts {
   bool verbose = false;
@@ -49,27 +13,29 @@ struct gsl_multimin_opts {
     = gsl_multimin_fminimizer_nmsimplex2;
 };
 
-template <size_t N, typename F>
-auto gsl_multimin (
-  const std::array<std::array<double,2>,N>& start_step,
+template <typename F>
+std::vector<double> gsl_multimin (
+  const std::vector<std::array<double,2>>& start_step,
   F&& f,
   const gsl_multimin_opts& opts = { }
-) -> std::array<double,N> {
-  using namespace detail::gsl_multimin;
-
+) {
   /* Initialize method and iterate */
   gsl_multimin_function minex_func;
-  minex_func.n = N;
+  const unsigned n = start_step.size();
+  minex_func.n = n;
   minex_func.params = &f;
   minex_func.f = [](const gsl_vector *v, void *p){
-    return apply<N>( (*reinterpret_cast<F*>(p)), v );
+    return (*reinterpret_cast<F*>(p))(v->data);
   };
 
-  gsl_vector *x = gsl_vector_alloc(N);
-  gsl_vector *step = gsl_vector_alloc(N);
-  set_start_step(x,step,start_step);
+  gsl_vector *x = gsl_vector_alloc(n);
+  gsl_vector *step = gsl_vector_alloc(n);
+  for (unsigned i=0; i<n; ++i) {
+    gsl_vector_set( x   , i, std::get<0>(start_step[i]) );
+    gsl_vector_set( step, i, std::get<1>(start_step[i]) );
+  }
 
-  gsl_multimin_fminimizer *s = gsl_multimin_fminimizer_alloc(opts.min_type,N);
+  gsl_multimin_fminimizer *s = gsl_multimin_fminimizer_alloc(opts.min_type,n);
   gsl_multimin_fminimizer_set(s, &minex_func, x, step);
 
   size_t iter = 0;
@@ -87,14 +53,14 @@ auto gsl_multimin (
 
     if (opts.verbose) {
       printf("%5lu f = %10.3e size = %9.3e", iter, s->fval, size);
-      for (size_t i=0; i<N; ++i)
+      for (size_t i=0; i<n; ++i)
         printf(" %10.3e",gsl_vector_get(s->x,i));
       printf("\n");
     }
   } while (status == GSL_CONTINUE && iter < opts.max_iter);
 
-  std::array<double,N> ret;
-  for (size_t i=N; i; ) { --i; ret[i] = gsl_vector_get(s->x,i); }
+  std::vector<double> ret(n);
+  for (auto i=n; i; ) { --i; ret[i] = gsl_vector_get(s->x,i); }
 
   gsl_vector_free(x);
   gsl_vector_free(step);

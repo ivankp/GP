@@ -10,7 +10,9 @@
 
 using std::cout;
 using std::endl;
-using linalg::sq;
+using ivanp::linalg::sq;
+
+using namespace ivanp;
 
 int main(int argc, char* argv[]) {
   std::vector<double> xs {
@@ -25,14 +27,14 @@ int main(int argc, char* argv[]) {
   };
   auto us = generator(xs.begin(),xs.end(),[](auto x){ return 0.5; });
 
-  const auto hs = ivanp::gsl_multimin<2>({{
+  const auto hs = gsl_multimin({
       { 1., 0.1 },
       { 1., 0.1 }
-    }}, [&](double s, double l){
-      return gp_logml_opt(xs, ys, us,
+    }, [&](const double* p){
+      return gp::logml(xs, ys, us,
         [](auto a, auto b, double s, double l){
           return s * std::exp(-0.5*sq((a-b)/l));
-        }, s, l);
+        }, p[0], p[1]);
     }, { verbose: true, 1e-5 }
   );
 

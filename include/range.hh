@@ -4,6 +4,8 @@
 #include <iterator>
 #include <type_traits>
 
+namespace ivanp {
+
 template <typename Begin, typename End>
 class range {
   Begin b;
@@ -31,5 +33,7 @@ using range_for_t = range<
   std::decay_t<decltype(begin(std::declval<T>()))>,
   std::decay_t<decltype(end  (std::declval<T>()))>
 >;
+
+}
 
 #endif

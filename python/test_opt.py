@@ -4,10 +4,6 @@ import math, sys
 import ivanp_gp
 import numpy as np
 
-l = float(sys.argv[1]) if len(sys.argv)>1 else 1.
-u = float(sys.argv[2]) if len(sys.argv)>2 else 0.001
-m = float(sys.argv[3]) if len(sys.argv)>3 else 1.
-
 # https://www.librec.net/datagen.html
 xs = [
 -7.288352, -6.354489, -6.343246, -5.873644, -4.744751, -4.092581, -3.743588,
@@ -19,13 +15,16 @@ ys = [
 0.388252, 1.405444, 1.691977, -0.13467, -0.743553, -1.022923, -2.69914,
 -2.226361, -1.287966, -1.116046, -1.574499, -1.080229, -0.84384
 ]
-us = [ u for x in xs ]
+us = [ 0.001 for x in xs ]
 ts = np.linspace(xs[0],xs[-1],1001).tolist()
 
-def kernel(a, b):
-    return m * math.exp(-0.5*(((a-b)/l)**2))
+def kernel(a, b, hs):
+    return hs[0] * math.exp(-0.5*(((a-b)/hs[1])**2))
 
-gp = ivanp_gp.regression(xs,ys,us,ts,kernel)
+hs = ivanp_gp.opt(xs,ys,us,kernel,[[1.,0.1],[0.5,0.1]])
+print hs
+
+gp = ivanp_gp.regression(xs,ys,us,ts,lambda a,b: kernel(a,b,hs))
 
 print 'regression complete'
 
@@ -45,5 +44,5 @@ plt.plot(ts, [ m for m,u in gp ], 'r-', lw=2)
 # plt.axis([105,160,0,40])
 plt.margins(x=0)
 
-plt.savefig('test.pdf', bbox_inches='tight')
+plt.savefig('test_opt.pdf', bbox_inches='tight')
 
