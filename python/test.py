@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import math, sys
-from gaussian_process import *
+import gaussian_process
 import numpy as np
 
 l = float(sys.argv[1]) if len(sys.argv)>1 else 1.
@@ -25,7 +25,7 @@ ts = np.linspace(xs[0],xs[-1],1001).tolist()
 def kernel(a, b):
     return m * math.exp(-0.5*(((a-b)/l)**2))
 
-gp = gaussian_process(xs,ys,us,ts,kernel)
+gp = gaussian_process.gp(xs,ys,us,ts,kernel)
 
 print 'regression complete'
 

@@ -86,8 +86,34 @@ PyObject* gp(PyObject *self, PyObject *args) {
   ));
 }
 
+extern "C"
+PyObject* gp_logml_opt_py(PyObject *self, PyObject *args) {
+  PyObject
+    *xs, // training points coordinates
+    *ys, // training points values
+    *us, // noise variances (add to diagonal)
+    *kernel, // kernel function
+    *hs; // kernel (hyper)parameters
+  PyArg_ParseTuple(args, "OOOOO", &xs, &ys, &us, &kernel, &hs);
+
+  return py(gp_logml_opt(
+    PyList2vector(xs),
+    PyList2vector(ys),
+    PyList2vector(us),
+    [=](double a, double b){
+      PyObject* ref = PyObject_CallFunction(kernel,"ddO",a,b,hs);
+      if (!ref) throw std::runtime_error("Unable to call GP kernel function");
+      const double k = PyFloat_AS_DOUBLE(ref);
+      Py_DECREF(ref);
+      return k;
+    }
+  ));
+}
+
 PyMethodDef methods[] = {
-  { "gaussian_process", gp, METH_VARARGS, "Gaussian Process Regression" },
+  { "gp", gp, METH_VARARGS, "Gaussian Process Regression" },
+  { "gp_logml_opt", gp_logml_opt_py, METH_VARARGS,
+    "Log Marginal Likelihood for Gaussian Process Regression" },
   { NULL, NULL, 0, NULL }
 };
 
