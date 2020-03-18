@@ -10,6 +10,6 @@
 
 !python
 python/build
-python/test.pdf
+python/test*.pdf
 
 **.swp

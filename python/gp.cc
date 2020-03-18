@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <memory>
+#include <sstream>
 #include <Python.h>
 
 #include "gp.hh"
@@ -11,13 +12,29 @@
 
 // https://docs.python.org/2/c-api/concrete.html
 
-/*
 #include <iostream>
 #define TEST(var) \
-  std::cout << "\033[36m" #var "\033[0m = " << var << std::endl;
-*/
+  std::cout << "\033[36m" #var "\033[0m = " << var << std::endl
 
-namespace {
+namespace ivanp_gp {
+
+template <typename... T>
+std::string cat(T&&... x) {
+  std::stringstream ss;
+  using expander = int[];
+  (void)expander{0, ((void)(ss << std::forward<T>(x)), 0)...};
+  return ss.str();
+}
+std::string cat() { return { }; }
+std::string cat(std::string x) { return x; }
+std::string cat(const char* x) { return x; }
+
+struct error : std::runtime_error {
+  using std::runtime_error::runtime_error;
+  template <typename... T>
+  error(T&&... x): std::runtime_error(cat(x...)) { };
+  error(const char* str): std::runtime_error(str) { };
+};
 
 template <typename T> struct unpy_impl;
 
@@ -65,7 +82,7 @@ std::vector<double> PyObject2vector(PyObject* p) {
   const auto n = PyObject_Size(p);
   if (n > -1) v.reserve(n);
   p = PyObject_GetIter(p);
-  if (!p) throw std::runtime_error("Unable to iterate PyObject");
+  if (!p) throw error("Unable to iterate PyObject");
   PyObject *item;
   while ((item = PyIter_Next(p))) {
     v.push_back(PyFloat_AsDouble(item));
@@ -78,7 +95,7 @@ std::vector<double> PyObject2vector(PyObject* p) {
 PyObject* safe(PyObject* p) {
   if (p) return p;
   Py_DECREF(p);
-  throw std::runtime_error("Unable to allocate memory for python object");
+  throw error("Unable to allocate memory for python object");
 }
 
 PyObject* py(double x) { return safe(PyFloat_FromDouble(x)); }
@@ -108,7 +125,8 @@ T py_call(PyObject* f, const char* types, Args&&... args) {
   std::unique_ptr<PyObject,py_decref_deleter> ret(
     PyObject_CallFunction(f,const_cast<char*>(types),std::forward<Args>(args)...)
   );
-  if (!ret) throw std::runtime_error("Unable to call python function");
+  if (!ret) throw error("Unable to call python function \"",
+    PyString_AsString(PyObject_GetAttrString(f,"__name__")),'\"');
   return unpy<T>(ret.get());
 }
 
@@ -195,6 +213,6 @@ PyMethodDef methods[] = {
 } // end namespace
 
 PyMODINIT_FUNC initivanp_gp(void) {
-  (void) Py_InitModule("ivanp_gp", methods);
+  (void) Py_InitModule("ivanp_gp", ivanp_gp::methods);
 }
 
